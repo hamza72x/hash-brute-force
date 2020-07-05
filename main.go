@@ -35,10 +35,11 @@ func main() {
 	defer file.Close()
 
 	scanner := bufio.NewScanner(file)
+	hashByte := []byte(*hash)
 
 	for scanner.Scan() {
-		if compareHash(*hash, scanner.Text()) {
-			hel.Pl("Found pass", scanner.Text())
+		if bcrypt.CompareHashAndPassword(hashByte, scanner.Bytes()) == nil {
+			hel.Pl("Found pass `" + scanner.Text() + "`")
 			os.Exit(1)
 		}
 	}
@@ -65,13 +66,5 @@ func hashAndSalt(pwd string) string {
 func compareHash(hashedPwd string, pwd string) bool {
 	// Since we'll be getting the hashed password from the DB it
 	// will be a string so we'll need to convert it to a byte slice
-	byteHash := []byte(hashedPwd)
-	err := bcrypt.CompareHashAndPassword(byteHash, []byte(pwd))
-
-	if err != nil {
-		// hel.Pl("error CompareHashAndPassword", err)
-		return false
-	}
-
-	return true
+	return bcrypt.CompareHashAndPassword([]byte(hashedPwd), []byte(pwd)) == nil
 }
