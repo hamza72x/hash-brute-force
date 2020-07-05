@@ -4,12 +4,15 @@ import (
 	"bufio"
 	"flag"
 	"os"
+	"runtime"
 
 	hel "github.com/thejini3/go-helper"
 	"golang.org/x/crypto/bcrypt"
 )
 
 func main() {
+
+	runtime.GOMAXPROCS(runtime.NumCPU())
 
 	wordlist := flag.String("wordlist", "", "wordlist file path (Required)")
 	hash := flag.String("hash", "", "hash string that need to be found (Required)")
@@ -19,6 +22,8 @@ func main() {
 		flag.PrintDefaults()
 		os.Exit(1)
 	}
+
+	hel.Pl("Using all core", runtime.NumCPU())
 
 	file, err := os.Open(*wordlist)
 
