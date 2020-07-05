@@ -45,26 +45,26 @@ func main() {
 	}
 }
 
-// HashAndSalt get a hash for given string
-func hashAndSalt(pwd string) string {
+// // HashAndSalt get a hash for given string
+// func hashAndSalt(pwd string) string {
 
-	// Use GenerateFromPassword to hash & salt pwd.
-	// MinCost is just an integer constant provided by the bcrypt
-	// package along with DefaultCost & MaxCost.
-	// The cost can be any value you want provided it isn't lower
-	// than the MinCost (4)
-	hash, err := bcrypt.GenerateFromPassword([]byte(pwd), bcrypt.MinCost)
-	if err != nil {
-		hel.Pl("error hassing", err)
-	}
-	// GenerateFromPassword returns a byte slice so we need to
-	// convert the bytes to a string and return it
-	return string(hash)
-}
+// 	// Use GenerateFromPassword to hash & salt pwd.
+// 	// MinCost is just an integer constant provided by the bcrypt
+// 	// package along with DefaultCost & MaxCost.
+// 	// The cost can be any value you want provided it isn't lower
+// 	// than the MinCost (4)
+// 	hash, err := bcrypt.GenerateFromPassword([]byte(pwd), bcrypt.MinCost)
+// 	if err != nil {
+// 		hel.Pl("error hassing", err)
+// 	}
+// 	// GenerateFromPassword returns a byte slice so we need to
+// 	// convert the bytes to a string and return it
+// 	return string(hash)
+// }
 
-// ComparePasswords compare a hash for given string
-func compareHash(hashedPwd string, pwd string) bool {
-	// Since we'll be getting the hashed password from the DB it
-	// will be a string so we'll need to convert it to a byte slice
-	return bcrypt.CompareHashAndPassword([]byte(hashedPwd), []byte(pwd)) == nil
-}
+// // ComparePasswords compare a hash for given string
+// func compareHash(hashedPwd string, pwd string) bool {
+// 	// Since we'll be getting the hashed password from the DB it
+// 	// will be a string so we'll need to convert it to a byte slice
+// 	return bcrypt.CompareHashAndPassword([]byte(hashedPwd), []byte(pwd)) == nil
+// }
