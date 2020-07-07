@@ -12,10 +12,10 @@ import (
 
 func main() {
 
-	runtime.GOMAXPROCS(runtime.NumCPU())
-
 	wordlist := flag.String("wordlist", "", "wordlist file path (Required)")
 	hash := flag.String("hash", "", "hash string that need to be found (Required)")
+	core := flag.Int("core", -1, "number of cpu core, Default -1 (all core) (Optional)")
+
 	flag.Parse()
 
 	if *wordlist == "" || *hash == "" {
@@ -23,7 +23,13 @@ func main() {
 		os.Exit(1)
 	}
 
-	hel.Pl("Using all core", runtime.NumCPU())
+	if *core == 0 {
+		*core = 1
+	} else if *core > runtime.NumCPU() || *core == -1 {
+		*core = runtime.NumCPU()
+	}
+
+	hel.Pl("Using cpu core(s):", runtime.GOMAXPROCS(*core))
 
 	file, err := os.Open(*wordlist)
 
