@@ -5,13 +5,15 @@ import (
 	"flag"
 	"os"
 	"runtime"
+	"sync"
+	"time"
 
 	hel "github.com/thejini3/go-helper"
 	"golang.org/x/crypto/bcrypt"
 )
 
 func main() {
-
+	started := time.Now()
 	wordlist := flag.String("wordlist", "", "wordlist file path (Required)")
 	hash := flag.String("hash", "", "hash string that need to be found (Required)")
 	core := flag.Int("core", -1, "number of cpu core, Default -1 (all core) (Optional)")
@@ -43,12 +45,20 @@ func main() {
 	scanner := bufio.NewScanner(file)
 	hashByte := []byte(*hash)
 
+	var wg sync.WaitGroup
+
 	for scanner.Scan() {
-		if bcrypt.CompareHashAndPassword(hashByte, scanner.Bytes()) == nil {
-			hel.Pl("Found pass `" + scanner.Text() + "`")
-			os.Exit(1)
-		}
+		wg.Add(1)
+		go func(hashByte []byte, pass []byte) {
+			if bcrypt.CompareHashAndPassword(hashByte, pass) == nil {
+				hel.Pl("Found pass `" + string(pass) + "`")
+				os.Exit(1)
+			}
+			wg.Done()
+		}(hashByte, scanner.Bytes())
 	}
+	wg.Wait()
+	hel.Pl("Done in:", time.Since(started))
 }
 
 // // HashAndSalt get a hash for given string
