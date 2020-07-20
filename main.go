@@ -12,8 +12,10 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+var started time.Time
+
 func main() {
-	started := time.Now()
+	started = time.Now()
 	wordlist := flag.String("wordlist", "", "wordlist file path (Required)")
 	hash := flag.String("hash", "", "hash string that need to be found (Required)")
 	core := flag.Int("core", -1, "number of cpu core, Default -1 (all core) (Optional)")
@@ -52,12 +54,16 @@ func main() {
 		go func(hashByte []byte, pass []byte) {
 			if bcrypt.CompareHashAndPassword(hashByte, pass) == nil {
 				hel.Pl("Found pass `" + string(pass) + "`")
+				done()
 				os.Exit(1)
 			}
 			wg.Done()
 		}(hashByte, scanner.Bytes())
 	}
 	wg.Wait()
+	done()
+}
+func done() {
 	hel.Pl("Done in:", time.Since(started))
 }
 
