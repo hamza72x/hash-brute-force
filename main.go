@@ -45,7 +45,6 @@ func main() {
 	var c = make(chan int, *thread)
 	var checked = 0
 	var totalToBeChecked = len(passes)
-	var found = false
 
 	hel.Pl("CPU core(s):", runtime.GOMAXPROCS(*core))
 	hel.Pl("Concurrent threads:", *thread)
