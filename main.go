@@ -37,6 +37,7 @@ func main() {
 	}
 
 	hel.Pl("Using cpu core(s):", runtime.GOMAXPROCS(*core))
+	hel.Pl("Number of concurrent threads:", *thread)
 
 	passes := hel.StrToArr(hel.FileStrMust(*wordlist), "\n")
 
