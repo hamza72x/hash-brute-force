@@ -18,6 +18,7 @@ var started time.Time
 
 func main() {
 	started = time.Now()
+
 	wordlist := flag.String("w", "", "(Required) wordlist file path")
 	hash := flag.String("h", "", "(Required) hash string that need to be found")
 	core := flag.Int("c", -1, "(Optional) number of cpu core,  -1 = all core")
@@ -36,9 +37,6 @@ func main() {
 		*core = runtime.NumCPU()
 	}
 
-	hel.Pl("Using cpu core(s):", runtime.GOMAXPROCS(*core))
-	hel.Pl("Number of concurrent threads:", *thread)
-
 	passes := hel.StrToArr(hel.FileStrMust(*wordlist), "\n")
 
 	hashByte := []byte(*hash)
@@ -46,8 +44,13 @@ func main() {
 	var wg sync.WaitGroup
 	var c = make(chan int, *thread)
 	var checked = 0
+	var totalToBeChecked = len(passes)
+	var found = false
 
-	hel.Pl("Starting, total passwords to check", len(passes))
+	hel.Pl("CPU core(s):", runtime.GOMAXPROCS(*core))
+	hel.Pl("Concurrent threads:", *thread)
+	hel.Pl("Wordlist:", *wordlist, "(", totalToBeChecked/1000.0, "K )")
+	hel.Pl("Hash To Find:", *hash)
 
 	for i, p := range passes {
 
@@ -65,6 +68,10 @@ func main() {
 			checked++
 
 			fmt.Printf("\rChecked - %d ", checked)
+
+			if totalToBeChecked == checked {
+				fmt.Printf("\n\nNot found probably... :/")
+			}
 
 			<-c
 			wg.Done()
