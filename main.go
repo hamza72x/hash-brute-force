@@ -1,8 +1,8 @@
 package main
 
 import (
-	"bufio"
 	"flag"
+	"fmt"
 	"os"
 	"runtime"
 	"sync"
@@ -14,11 +14,14 @@ import (
 
 var started time.Time
 
+// 12345 = $2y$12$APew2qEmu/1YDnHmdPUT5.idVsU3lN2gE17srB3lC7Jiqsdf2qg9m
+
 func main() {
 	started = time.Now()
-	wordlist := flag.String("wordlist", "", "wordlist file path (Required)")
-	hash := flag.String("hash", "", "hash string that need to be found (Required)")
-	core := flag.Int("core", -1, "number of cpu core, Default -1 (all core) (Optional)")
+	wordlist := flag.String("w", "", "(Required) wordlist file path")
+	hash := flag.String("h", "", "(Required) hash string that need to be found")
+	core := flag.Int("c", -1, "(Optional) number of cpu core,  -1 = all core")
+	thread := flag.Int("t", 50, "(Optional) number of concurrent thread")
 
 	flag.Parse()
 
@@ -35,36 +38,45 @@ func main() {
 
 	hel.Pl("Using cpu core(s):", runtime.GOMAXPROCS(*core))
 
-	file, err := os.Open(*wordlist)
+	passes := hel.StrToArr(hel.FileStrMust(*wordlist), "\n")
 
-	if err != nil {
-		hel.Pl("Error opening file", err)
-		os.Exit(1)
-	}
-
-	defer file.Close()
-
-	scanner := bufio.NewScanner(file)
 	hashByte := []byte(*hash)
 
 	var wg sync.WaitGroup
+	var c = make(chan int, *thread)
+	var checked = 0
 
-	for scanner.Scan() {
+	hel.Pl("Starting, total passwords to check", len(passes))
+
+	for i, p := range passes {
+
 		wg.Add(1)
-		go func(hashByte []byte, pass []byte) {
+
+		go func(hashByte []byte, pass []byte, i int) {
+
+			c <- i
+
 			if bcrypt.CompareHashAndPassword(hashByte, pass) == nil {
-				hel.Pl("Found pass `" + string(pass) + "`")
+				fmt.Printf("\n\nFound pass `" + string(pass) + "`\n\n")
 				done()
-				os.Exit(1)
 			}
+
+			checked++
+
+			fmt.Printf("\rChecked - %d ", checked)
+
+			<-c
 			wg.Done()
-		}(hashByte, scanner.Bytes())
+
+		}(hashByte, []byte(p), i)
 	}
 	wg.Wait()
+	close(c)
 	done()
 }
 func done() {
 	hel.Pl("Done in:", time.Since(started))
+	os.Exit(0)
 }
 
 // // HashAndSalt get a hash for given string
